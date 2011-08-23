@@ -19,9 +19,19 @@
 			allOptionAsEmpty: false,
 			
 			url: '',
-			paramsNamed: false
+			allSeparator: false,
+			queryFirst: '?',
+			queryOperator: '=',
+			
+			appendSlash: false //add slash "/" at the end of the url
 			
 		}, config);
+		
+		//configure separator
+		if (config.allSeparator) {
+			config.queryFirst = config.allSeparator,
+			config.queryOperator = config.allSeparator;
+		}
 		
 		//ajax loader
 		if (config.loader) {
@@ -34,7 +44,7 @@
 		
 		//parent select box config
 		var $target = {},
-		url = '', selected = '',
+		url = '', selected = '', value = '',
 		$self = null,
 		
 		autoBox = {
@@ -75,27 +85,30 @@
 				if (typeof($change.url) != 'undefined'){
 					url = $change.url;
 				}
-				//remove the last slash on url
-				url = url.replace(/\/$/g, "");
-				
-				//use by cakephp params named
-				if (config.paramsNamed) {
-					operator = ':';
-					url += '/';
-				} else {
-					url += '?';
-					operator = '=';
-				}
 				
 				//append to URL if exist
 				if ($.isFunction($change.appendToUrl)){
 					url += $change.appendToUrl();
-				} else if ($self.attr('apBoxName') != null) {
-					//automatically append params based on parent
-					url += $self.attr('apBoxName') + operator + $self.val();
 				} else {
-					//use the name of the select box
-					url += $self.attr('name') + operator + $self.val();
+					
+					//remove the last slash on url
+					url = url.replace(/\/$/g, "");
+					
+					url += config.queryFirst;
+					
+					//get attribute name
+					if ($self.attr('apBoxName') != null) {
+						$name = $self.attr('apBoxName');
+					} else {
+						$name = $self.attr('name');
+					}
+					
+					value = $self.val().toString();
+					url += $name + config.queryOperator + value.replace(/\,/g, "-");
+				}
+				
+				if (config.appendSlash) {
+					url += '/';
 				}
 				
 				//Call AJAX and return data as JSON object
